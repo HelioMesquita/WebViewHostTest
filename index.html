@@ -184,8 +184,8 @@
     <!-- SEARCH VIEW -->
     <div id="search">
       <h1>Prime Big Deals Day Checker</h1>
-      <p class="lede">See how each deal compares by checking its price against the lowest of the year and the past 30 days. (v3)</p>
-      <div class="search-field">
+      <p class="lede">See how each deal compares by checking its price against the lowest of the year and the past 30 days. (v4)</p>
+x`      <div class="search-field">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
         <input type="text" id="q" placeholder="Search for deals…" autocomplete="off" aria-label="Search for deals">
       </div>
@@ -480,6 +480,7 @@
     /* ---- init ---- */
     $("q").addEventListener('input', e=>render(e.target.value));
     $("q").addEventListener('keydown', keyNav);
+    $("q").addEventListener('blur', ()=>window.scrollTo({top:0,behavior:'smooth'}));
     $("backBtn").addEventListener('click', reset);
   
      
