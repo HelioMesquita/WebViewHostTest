@@ -184,7 +184,7 @@
     <!-- SEARCH VIEW -->
     <div id="search">
       <h1>Prime Big Deals Day Checker</h1>
-      <p class="lede">See how each deal compares by checking its price against the lowest of the year and the past 30 days. (v1)</p>
+      <p class="lede">See how each deal compares by checking its price against the lowest of the year and the past 30 days. (v3)</p>
       <div class="search-field">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
         <input type="text" id="q" placeholder="Search for deals…" autocomplete="off" aria-label="Search for deals">
@@ -228,6 +228,7 @@
 </div>
 
 
+<script src="data.js"></script>
 <script>
     let DATA = [];
     let matches = [];
@@ -420,7 +421,10 @@
       out.push(cur.trim());return out;
     }
      
-    /* ---- CSV loader: repairs mojibake, parses by header. ---- */
+    /* ---- CSV loader: repairs mojibake, parses by header.
+       Data comes from data.js (window.CSV_DATA) instead of fetch('data.csv'),
+       because fetch() is blocked by CORS when this page is opened directly
+       as a local file:// URL — a <script src> is not. ---- */
     function loadFromCSV(text){
       try{
         if(!text) throw new Error("window.CSV_DATA is empty or missing");
@@ -463,10 +467,10 @@
         }
       }catch(err){
         console.error("CSV load failed:", err);
-        showLoadError("Couldn’t load deals data. Make sure data.csv is in the same folder as this page.");
+        showLoadError("Couldn’t load deals data. Make sure data.js is in the same folder as this page.");
       }
     }
-     
+
     function showLoadError(msg){
       const list = $("list");
       list.classList.remove("hidden");
@@ -479,13 +483,7 @@
     $("backBtn").addEventListener('click', reset);
   
      
-    fetch('data.csv')
-      .then(res => { if(!res.ok) throw new Error('HTTP '+res.status); return res.text(); })
-      .then(loadFromCSV)
-      .catch(err => {
-        console.error("CSV fetch failed:", err);
-        showLoadError("Couldn’t load deals data. Make sure data.csv is in the same folder as this page.");
-      });
+    loadFromCSV(window.CSV_DATA);
     </script>
 </body>
 </html>
