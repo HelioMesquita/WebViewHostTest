@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prime Day Deal Checker</title>
+<style>
+     @font-face {
+            font-family:"effra";
+            src:url("https://use.typekit.net/af/bc093c/00000000000000007735fd41/30/l?primer=7cdcb44be4a7db8877ffa5c0007b8dd865b3bbc383831fe2ea177f62257a9191&fvd=n4&v=3") format("woff2"),url("https://use.typekit.net/af/bc093c/00000000000000007735fd41/30/d?primer=7cdcb44be4a7db8877ffa5c0007b8dd865b3bbc383831fe2ea177f62257a9191&fvd=n4&v=3") format("woff"),url("https://use.typekit.net/af/bc093c/00000000000000007735fd41/30/a?primer=7cdcb44be4a7db8877ffa5c0007b8dd865b3bbc383831fe2ea177f62257a9191&fvd=n4&v=3") format("opentype");
+            font-display:auto;font-style:normal;font-weight:400;font-stretch:normal;
+        }
+        
+        @font-face {
+            font-family:"effra";
+            src:url("https://use.typekit.net/af/c0864f/00000000000000007735fd3d/30/l?primer=7cdcb44be4a7db8877ffa5c0007b8dd865b3bbc383831fe2ea177f62257a9191&fvd=n7&v=3") format("woff2"),url("https://use.typekit.net/af/c0864f/00000000000000007735fd3d/30/d?primer=7cdcb44be4a7db8877ffa5c0007b8dd865b3bbc383831fe2ea177f62257a9191&fvd=n7&v=3") format("woff"),url("https://use.typekit.net/af/c0864f/00000000000000007735fd3d/30/a?primer=7cdcb44be4a7db8877ffa5c0007b8dd865b3bbc383831fe2ea177f62257a9191&fvd=n7&v=3") format("opentype");
+            font-display:auto;font-style:normal;font-weight:700;font-stretch:normal;
+        }
+</style>
+<style>
+  :root{
+    --blue:#1399FF;
+    --gold:#fdce07;
+    --ink:#0a2540;
+    --ink-soft:#46586b;
+    --ink-faint:#8a99a6;
+    --line:#e3e9ee;
+    --great:#1f7a4d;  --great-bg:#e6f4ec;
+    --good:#b07a00;   --good-bg:#fbf2d8;
+    --meh:#9d4040;    --meh-bg:#f7eaea;
+    --shadow:0 18px 44px rgba(8,52,94,.22);
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;padding:32px 18px 48px;
+    color:var(--ink);
+    font-family:'effra',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased;line-height:1.45;
+  }
+  .wrap{max-width:480px;margin:0 auto;}
+
+  /* ---------- BLUE PANEL (from original) ---------- */
+  .panel{
+    background:var(--blue);
+    border-radius:22px;
+    box-shadow:var(--shadow);
+    padding:34px 30px 30px;
+    color:#fff;
+  }
+  h1{font-size:30px;line-height:1.1;letter-spacing:-.01em;margin:0 0 10px;font-weight:700;}
+  .lede{font-size:16px;color:rgba(255,255,255,.92);margin:0 0 22px;}
+
+  /* ---------- SEARCH + DROPDOWN ---------- */
+  .search-field{position:relative;}
+  .search-field svg{
+    position:absolute;left:15px;top:50%;transform:translateY(-50%);
+    width:20px;height:20px;color:var(--ink-faint);pointer-events:none;
+  }
+  #q{
+    width:100%;padding:14px 14px 14px 44px;font-size:16px;font-family:inherit;
+    color:var(--ink);background:#fff;border:2px solid transparent;border-radius:12px;
+    transition:box-shadow .15s ease;
+  }
+  /* #q:focus{outline:none;box-shadow:0 0 0 4px rgba(253,206,7,.55);} */
+  #q::placeholder{color:var(--ink-faint);}
+
+  .dropdown{
+    margin-top:8px;background:#fff;border-radius:12px;overflow:hidden;
+    box-shadow:0 10px 24px rgba(8,52,94,.18);
+    max-height:210px;overflow-y:auto;
+  }
+  .row{
+    display:flex;align-items:center;gap:11px;padding:12px 14px;cursor:pointer;
+    border-bottom:1px solid var(--line);text-align:left;transition:background .12s ease;
+  }
+  .row:last-child{border-bottom:none;}
+  .row:hover,.row.active{background:#f1f8ff;}
+  .row .rname{flex:1;font-size:14px;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .row .rprice{font-size:14px;font-weight:700;color:var(--ink);white-space:nowrap;}
+  .empty{padding:16px;font-size:14px;color:var(--ink-faint);text-align:center;}
+
+  /* ---------- VERDICT (inside blue panel) ---------- */
+  .pill{
+    display:inline-flex;align-items:center;gap:7px;
+    font-size:12.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+    padding:6px 13px;border-radius:999px;margin-bottom:16px;
+  }
+  .pill.great{background:var(--great-bg);color:var(--great);}
+  .pill.good{background:var(--good-bg);color:var(--good);}
+  .pill.meh{background:var(--meh-bg);color:var(--meh);}
+  .pill svg{width:14px;height:14px;}
+
+  .price-now{display:flex;align-items:baseline;gap:10px;margin-bottom:6px;}
+  .price-now .amt{font-size:48px;font-weight:700;letter-spacing:-.02em;line-height:1;color:#fff;}
+  .price-now .save{font-size:14px;font-weight:600;color:var(--gold);}
+  .pname{font-size:15px;color:rgba(255,255,255,.9);margin:0 0 22px;line-height:1.35;overflow: hidden; text-overflow: ellipsis; white-space: nowrap;}
+
+  /* ---------- PRICE-POSITION BAR (signature) ---------- */
+  .scale{margin:28px 0 4px;padding-bottom:64px;}
+  .scale-track{
+    position:relative;height:9px;border-radius:999px;margin:34px 0 0;
+    background:rgba(255,255,255,.30);
+  }
+  .scale-fill{
+    position:absolute;top:0;bottom:0;border-radius:999px;background:#fff;
+    left:var(--pos,50%);right:0;
+    transition:left .5s cubic-bezier(.2,.7,.3,1);
+  }
+  .marker{
+    position:absolute;top:50%;left:var(--pos,50%);transform:translate(-50%,-50%);
+    width:20px;height:20px;border-radius:50%;background:var(--gold);
+    border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.25);
+    transition:left .5s cubic-bezier(.2,.7,.3,1);
+  }
+  .marker-label{
+    position:absolute;top:-26px;left:var(--pos,50%);transform:translateX(-50%);
+    font-size:11px;font-weight:700;color:#fff;white-space:nowrap;
+    transition:left .5s cubic-bezier(.2,.7,.3,1);
+  }
+  /* reference points sit as small dots on the bar, at their true price position */
+  .tick{
+    position:absolute;top:50%;left:var(--p,50%);
+    width:12px;height:12px;border-radius:50%;
+    background:var(--gold);
+    transform:translate(-50%,-50%);
+    transition:left .5s cubic-bezier(.2,.7,.3,1);
+  }
+  .tick .tv{
+    position:absolute;top:14px;left:50%;transform:translateX(-50%);
+    font-size:13px;font-weight:700;color:#fff;white-space:nowrap;
+  }
+  .tick .tl{
+    position:absolute;top:31px;left:50%;transform:translateX(-50%);
+    font-size:11px;color:rgba(255,255,255,.8);white-space:nowrap;
+  }
+  /* edge-aware: keep end labels from clipping off the bar */
+  .tick.at-start .tv,.tick.at-start .tl{left:0;transform:none;text-align:left;}
+  .tick.at-end .tv,.tick.at-end .tl{left:auto;right:0;transform:none;text-align:right;}
+  /* second point drops lower when it would collide with the first */
+  .tick.stack .tv{top:50px;}
+  .tick.stack .tl{top:67px;}
+
+  /* thin connector so a dropped label still reads as belonging to its dot */
+.tick.stack::after{
+  content:"";position:absolute;top:6px;left:50%;width:1px;height:42px;
+  background:rgba(255,255,255,.4);transform:translateX(-50%);
+}
+.tick.stack.at-end::after{left:auto;right:0;transform:none;}
+.tick.stack.at-start::after{left:0;transform:none;}
+
+  .explain{
+    margin:20px 0 0;padding-top:18px;border-top:1px solid rgba(255,255,255,.25);
+    font-size:15px;color:rgba(255,255,255,.95);line-height:1.5;
+  }
+  .explain strong{color:#fff;font-weight:700;}
+
+  .actions{display:flex;gap:10px;margin-top:22px;}
+  .btn{
+    flex:1;padding:14px;border:none;border-radius:12px;cursor:pointer;
+    font-family:inherit;font-size:15px;font-weight:700;transition:transform .12s ease,filter .12s ease;
+  }
+  .btn:active{transform:translateY(1px);}
+  .btn-gold{background:var(--gold);color:#3a2e00;}
+  .btn-gold:hover{filter:brightness(1.05);}
+  .btn-ghost{background:rgba(255,255,255,.16);color:#fff;flex:0 0 auto;padding:14px 18px;}
+  .btn-ghost:hover{background:rgba(255,255,255,.26);}
+
+  .footnote{max-width:480px;margin:24px auto 0;}
+  .footnote p{font-size:12.5px;color:var(--ink-faint);line-height:1.5;margin:0 0 6px;}
+  .byline{font-weight:600;}
+
+  .hidden{display:none;}
+  @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;}}
+  @media (max-width:420px){.panel{padding:28px 22px;} h1{font-size:26px;} .price-now .amt{font-size:40px;}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="panel">
+
+    <!-- SEARCH VIEW -->
+    <div id="search">
+      <h1>Prime Big Deals Day Checker</h1>
+      <p class="lede">See how each deal compares by checking its price against the lowest of the year and the past 30 days.</p>
+      <div class="search-field">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+        <input type="text" id="q" placeholder="Search for deals…" autocomplete="off" aria-label="Search for deals">
+      </div>
+      <div class="dropdown hidden" id="list"></div>
+    </div>
+
+    <!-- VERDICT VIEW -->
+    <div id="card" class="hidden">
+      <span class="pill" id="pill"></span>
+      <div class="price-now">
+        <span class="amt" id="amt"></span>
+        <span class="save" id="save"></span>
+      </div>
+      <p class="pname" id="pname"></p>
+
+      <div class="scale">
+        <div class="scale-track">
+          <div class="scale-fill" id="fill"></div>
+          <span class="tick" id="tickYear"><span class="tv" id="lowVal"></span><span class="tl">Lowest this year</span></span>
+          <span class="tick" id="tick30"><span class="tv" id="highVal"></span><span class="tl">Lowest past 30 days</span></span>
+          <span class="marker-label" id="mlabel">This deal</span>
+          <span class="marker" id="marker"></span>
+        </div>
+      </div>
+
+      <div class="explain" id="explain"></div>
+
+      <div class="actions">
+        <button class="btn btn-gold" id="goBtn">Go to Amazon</button>
+        <button class="btn btn-ghost" id="backBtn">Search again</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="footnote">
+  <p>This tool is not affiliated with Amazon. The deal checker does not capture all the Prime Day deals. Prices are reflective of Prime Day deals while supplies last or how long deals remain in effect.</p>
+  <p class="byline">Interactive: Katrina Ventura/Get the Facts Data Team</p>
+</div>
+
+
+<script src="data.js"></script>
+<script>
+    let DATA = [];
+    let matches = [];
+    let active = -1;
+     
+    /* tiers + approved language */
+    function grade(d){
+      let tier;
+      if (d.price < d.yearLow) tier = "great";       // VERY GOOD
+      else if (d.price < d.typical30) tier = "good"; // GOOD
+      else tier = "meh";                             // NOT GOOD
+      return {...d, tier};
+    }
+    const TIERS = {
+      great:{label:"VERY GOOD", icon:"M20 6 9 17l-5-5"},
+      good: {label:"GOOD",      icon:"M5 12h14"},
+      meh:  {label:"NOT GOOD",  icon:"M12 8v5m0 3h.01M12 2a10 10 0 100 20 10 10 0 000-20z"}
+    };
+    const DESC = {
+      great:"this is the best deal yet, beating the lowest price of the year.",
+      good:"this deal is lower than the lowest price in the last 30 days.",
+      meh:"this deal is neither the lowest price of the year or the month but may still be worth considering."
+    };
+     
+    const $ = id => document.getElementById(id);
+    const money = n => "$" + Number(n).toFixed(2);
+    const esc = s => s.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+     
+    /* position a reference tick at percent p, snapping its label inward at the edges */
+    function placeTick(el, p){
+      el.style.setProperty("--p", p + "%");
+      el.classList.toggle("at-start", p <= 8);
+      el.classList.toggle("at-end", p >= 92);
+    }
+     
+    /* ---- dropdown ---- */
+    function render(q){
+      const list = $("list");
+      q = q.trim().toLowerCase();
+      if(!q){ list.classList.add("hidden"); list.innerHTML=''; matches=[]; active=-1; return; }
+      matches = DATA.filter(d => d.name.toLowerCase().includes(q)).slice(0,30);
+      list.classList.remove("hidden");
+      if(!matches.length){ list.innerHTML = '<div class="empty">No deals found. Try a broader term like “TV” or “vacuum.”</div>'; active=-1; return; }
+      list.innerHTML = matches.map((d,i)=>`
+        <div class="row" data-i="${i}" role="button" tabindex="0">
+          <span class="rname">${esc(d.name)}</span>
+          <span class="rprice">${money(d.price)}</span>
+        </div>`).join('');
+      active=-1;
+      list.querySelectorAll('.row').forEach(r=>r.addEventListener('click',()=>select(matches[+r.dataset.i])));
+    }
+     
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+     
+    function playPillFx(isGreat){
+      if (reduceMotion) return;
+      const pill = $("pill");
+      pill.classList.remove("animate","shimmer");
+      void pill.offsetWidth;            // restart the animation
+      pill.classList.add("animate");
+      if (isGreat) pill.classList.add("shimmer");
+    }
+     
+    /* Lightweight self-contained confetti — no external library. */
+    function burstConfetti(){
+      if (reduceMotion) return;
+      const panel = document.querySelector(".panel");
+      const cv = document.createElement("canvas");
+      const rect = panel.getBoundingClientRect();
+      cv.width = rect.width; cv.height = rect.height;
+      cv.style.cssText = "position:absolute;inset:0;pointer-events:none;z-index:5;";
+      panel.style.position = "relative";
+      panel.appendChild(cv);
+      const ctx = cv.getContext("2d");
+      const colors = ["#fdce07","#ffffff","#1f7a4d","#8ed0ad"];
+      const N = 90;
+      const bits = Array.from({length:N}, () => ({
+        x: cv.width/2 + (Math.random()-.5)*60,
+        y: cv.height*0.18,
+        vx:(Math.random()-.5)*9,
+        vy:Math.random()*-7-3,
+        g:0.22+Math.random()*0.1,
+        s:4+Math.random()*5,
+        rot:Math.random()*Math.PI,
+        vr:(Math.random()-.5)*0.4,
+        c:colors[(Math.random()*colors.length)|0]
+      }));
+      const start = performance.now();
+      (function frame(now){
+        const t = now - start;
+        ctx.clearRect(0,0,cv.width,cv.height);
+        bits.forEach(b=>{
+          b.vy += b.g; b.x += b.vx; b.y += b.vy; b.rot += b.vr;
+          ctx.save();
+          ctx.globalAlpha = Math.max(0, 1 - t/1800);
+          ctx.translate(b.x,b.y); ctx.rotate(b.rot);
+          ctx.fillStyle = b.c;
+          ctx.fillRect(-b.s/2,-b.s/2,b.s,b.s*0.6);
+          ctx.restore();
+        });
+        if (t < 1800) requestAnimationFrame(frame);
+        else cv.remove();
+      })(start);
+    }
+     
+    /* ---- verdict ---- */
+    function select(d){
+      const t = TIERS[d.tier];
+      $("pill").className = "pill " + d.tier;
+      $("pill").innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="${t.icon}"/></svg>Deal Rating: ${t.label}`;
+     
+      $("amt").textContent = money(d.price);
+      $("save").textContent = d.discountPct ? `Save ${d.discountPct}` : "";
+      $("pname").textContent = d.name;
+     
+      // Bar spans the full price range: from the lowest of the three figures to the highest.
+      const vals = [d.price, d.yearLow, d.typical30];
+      const lo = Math.min(...vals);
+      const hi = Math.max(...vals);
+      const at = v => hi > lo ? ((v - lo) / (hi - lo)) * 100 : 50;
+      const pos = at(d.price);
+      ["marker","mlabel"].forEach(id=>$(id).style.setProperty("--pos", pos+"%"));
+      $("fill").style.setProperty("--pos", pos+"%");
+     
+      // Reference ticks at their true positions.
+      const yp = at(d.yearLow), tp = at(d.typical30);
+      placeTick($("tickYear"), yp);
+      placeTick($("tick30"), tp);
+      $("lowVal").textContent = money(d.yearLow);
+      $("highVal").textContent = money(d.typical30);
+     
+      // Stack the second label only if the two labels actually overlap.
+      $("tick30").classList.remove("stack");
+      requestAnimationFrame(() => {
+        const a = $("tickYear").querySelector(".tl").getBoundingClientRect();
+        const b = $("tick30").querySelector(".tl").getBoundingClientRect();
+        const gap = 8;
+        const overlap = a.right - gap > b.left && b.right - gap > a.left;
+        $("tick30").classList.toggle("stack", overlap);
+      });
+     
+      $("explain").innerHTML = `At <strong>${money(d.price)}</strong>, ${DESC[d.tier]}`;
+      $("goBtn").onclick = ()=>window.open(d.link || "https://www.amazon.com","_blank","noopener");
+     
+      $("search").classList.add("hidden");
+      $("card").classList.remove("hidden");
+      window.scrollTo({top:0,behavior:"smooth"});
+     
+      playPillFx(d.tier === "great");
+      if (d.tier === "great") burstConfetti();
+    }
+     
+    function reset(){
+      $("card").classList.add("hidden");
+      $("search").classList.remove("hidden");
+      $("q").value=""; render("");
+    }
+     
+    function keyNav(e){
+      if(!matches.length) return;
+      const rows = $("list").querySelectorAll('.row');
+      if(e.key==="ArrowDown"){e.preventDefault();active=Math.min(active+1,matches.length-1);}
+      else if(e.key==="ArrowUp"){e.preventDefault();active=Math.max(active-1,0);}
+      else if(e.key==="Enter" && active>=0){e.preventDefault();select(matches[active]);return;}
+      else return;
+      rows.forEach((r,i)=>r.classList.toggle('active',i===active));
+      if(rows[active]) rows[active].scrollIntoView({block:"nearest"});
+    }
+     
+    /* Repair common "mojibake" — text whose encoding got mangled upstream.
+       Longer 'â€x' forms are listed before the bare 'â€' (which is a prefix of them). */
+    const MOJIBAKE = [
+      ['‚Äî','—'], ['‚Äì','–'], ['‚Äô','’'], ['‚Äò','‘'],
+      ['‚Äú','“'], ['‚Äù','”'], ['‚Ä¶','…'], ['‚Ä¢','•'],
+      ['‚Ñ¢','™'], ['Ñ¢','™'], ['¬Æ','®'], ['¬©','©'],
+      ['√©','é'], ['√±','ñ'], ['√º','ü'], ['√¥','ô'], ['√¢','â'],
+      ['Â®','®'], ['Â©','©'], ['Â°','°'], ['â„¢','™'],
+      ['â€™','’'], ['â€œ','“'], ['â€“','–'], ['â€”','—'], ['â€¦','…'], ['â€','”'],
+      ['Ã©','é'], ['Ã±','ñ'], ['Ã¼','ü']
+    ];
+    function fixEncoding(s){
+      if(!s) return '';
+      for(const [bad,good] of MOJIBAKE) s = s.split(bad).join(good);
+      return s.replace(/\uFFFD/g,'').trim();
+    }
+     
+    function parseLine(line){
+      const out=[];let cur='';let q=false;
+      for(const ch of line){ if(ch==='"')q=!q; else if(ch===','&&!q){out.push(cur.trim());cur='';} else cur+=ch; }
+      out.push(cur.trim());return out;
+    }
+     
+    /* ---- CSV loader: repairs mojibake, parses by header.
+       Data comes from data.js (window.CSV_DATA) instead of fetch('data.csv'),
+       because fetch() is blocked by CORS when this page is opened directly
+       as a local file:// URL \u2014 a <script src> is not. ---- */
+    function loadFromCSV(text){
+      try{
+        if(!text) throw new Error("window.CSV_DATA is empty or missing");
+        const lines = text.trim().split(/\r\n|\n|\r/);
+
+        const head = parseLine(lines[0]).map(h=>h.toLowerCase().trim());
+        const idx = (names, fb) => {
+        for(const n of [].concat(names)){
+            const i = head.indexOf(n);
+            if(i !== -1) return i;
+        }
+        return fb;
+        };
+        const iAsin  = idx(['asin'], 0);
+        const iName  = idx(['asin_name'], 1);
+        const iLink  = idx(['asin_url'], 2);
+        const iPrice = idx(['deal_price'], 3);
+        const iYear  = idx(['lowest_price_ytd'], 6);
+        const iT30   = idx(['lowest_t30d_price'], 7);
+        const iDisc  = idx(['discount_pct'], -1);
+
+        const out=[];
+        for(let i=1;i<lines.length;i++){
+        if(!lines[i].trim()) continue;          // skip blank lines
+        const v = parseLine(lines[i]);
+        const price=parseFloat(v[iPrice]);
+        const yearLow=parseFloat(v[iYear]);
+        const typical30=parseFloat(v[iT30]);
+        if([price,yearLow,typical30].some(isNaN)) continue;
+        let link=v[iLink]||"";
+        if(link && !/^https?:/.test(link)) link="https://"+link;
+        const discountPct=iDisc!==-1 ? (v[iDisc]||"").trim() : "";
+        const name=fixEncoding((v[iName]||"").replace(/^"|"$/g,''));
+        out.push(grade({asin:v[iAsin], name, price, yearLow, typical30, link, discountPct}));
+        }
+        if(out.length){
+          DATA = out;
+        } else {
+          showLoadError("No usable rows found. Check that the column headers match (name, dealprice, lowestpriceytd, lowestt30dprice, discount_pct).");
+        }
+      }catch(err){
+        console.error("CSV load failed:", err);
+        showLoadError("Couldn’t load deals data. Make sure data.js is in the same folder as this page.");
+      }
+    }
+     
+    function showLoadError(msg){
+      const list = $("list");
+      list.classList.remove("hidden");
+      list.innerHTML = `<div class="empty">${esc(msg)}</div>`;
+    }
+     
+    /* ---- init ---- */
+    $("q").addEventListener('input', e=>render(e.target.value));
+    $("q").addEventListener('keydown', keyNav);
+    $("backBtn").addEventListener('click', reset);
+  
+     
+    loadFromCSV(window.CSV_DATA);
+    </script>
+</body>
+</html>
