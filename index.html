@@ -462,7 +462,7 @@
         }
       }catch(err){
         console.error("CSV load failed:", err);
-        showLoadError("Couldn’t load deals data. Make sure data.csv is in the same folder as this page.");
+        showLoadError("Couldn’t load deals data. Make sure data.csv.gz is in the same folder as this page.");
       }
     }
 
@@ -476,12 +476,13 @@
     $("q").addEventListener('input', e=>render(e.target.value));
     $("q").addEventListener('keydown', keyNav);
     $("backBtn").addEventListener('click', reset);
-    fetch('data.csv')
-      .then(res => { if(!res.ok) throw new Error('HTTP '+res.status); return res.text(); })
+    fetch('data.csv.gz')
+      .then(res => { if(!res.ok) throw new Error('HTTP '+res.status); return res.body; })
+      .then(body => new Response(body.pipeThrough(new DecompressionStream('gzip'))).text())
       .then(loadFromCSV)
       .catch(err => {
         console.error("CSV fetch failed:", err);
-        showLoadError("Couldn’t load deals data. Make sure data.csv is in the same folder as this page.");
+        showLoadError("Couldn’t load deals data. Make sure data.csv.gz is in the same folder as this page.");
       });
     </script>
 </body>
